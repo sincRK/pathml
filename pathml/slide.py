@@ -5,16 +5,12 @@ import torch
 from torchvision import transforms
 import numpy as np
 import pyvips as pv
-import pandas as pd
 from PIL import Image, ImageDraw
 from joblib import Parallel, delayed
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, f1_score, precision_score, recall_score
-from skimage.transform import downscale_local_mean
 from skimage.filters import threshold_triangle, threshold_otsu
-from skimage.morphology import binary_dilation, remove_small_objects
-from scipy.ndimage.morphology import binary_fill_holes
 import scipy.sparse as sps
-from skimage.color import rgb2gray, rgb2lab
+from skimage.color import rgb2lab
 from skimage.transform import resize
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -23,6 +19,7 @@ from pathml.processor import Processor
 from pathml.models.tissuedetector import tissueDetector
 from pathml.utils.torch.WholeSlideImageDataset import WholeSlideImageDataset
 from pathml.utils.torch.dice_loss import dice_coeff
+from pathml.utils.pyvips.isyntax import open_isyntax
 import xml.etree.ElementTree as ET
 from shapely import geometry
 from shapely.ops import unary_union
@@ -30,14 +27,15 @@ from tqdm import tqdm
 import random
 import json
 import os
-import sys
 import pickle
-pv.cache_set_max(0)
 
+
+pv.cache_set_max(0)
 
 
 def unwrap_self(arg, **kwarg):
     return Slide.square_int(*arg, **kwarg)
+
 
 class Slide:
     """The main class of PathML; a representation of whole-slide image containing
@@ -87,7 +85,7 @@ class Slide:
         """
         self.__verbose = verbose
 
-        if slideFilePath[-4:] == '.pml': # initing from .pml file
+        if slideFilePath[-4:] == '.pml':  # initing from .pml file
             contents = pickle.load(open(slideFilePath, 'rb'))
             if newSlideFilePath:
                 self.slideFilePath = newSlideFilePath
@@ -98,15 +96,16 @@ class Slide:
                 self.rawTissueDetectionMap = contents['rawTissueDetectionMap']
             if 'annotationClassMultiPolygons' in contents:
                 self.annotationClassMultiPolygons = contents['annotationClassMultiPolygons']
-        else: # initing from WSI file (from scratch)
+        else:  # initing from WSI file (from scratch)
             self.slideFilePath = slideFilePath
         self.slideFileName = Path(self.slideFilePath).stem
 
         try:
             if self.__verbose:
                 print(self.__verbosePrefix + "Loading " + self.slideFilePath)
-            self.slide = pv.Image.new_from_file(
-                self.slideFilePath, level=level)
+            if os.path.splitext(self.slideFilePath)[1] == ".isyntax":
+                self.slide = open_isyntax(self.slideFilePath, level=level)
+            else: self.slide = pv.Image.new_from_file(self.slideFilePath, level=level)
         except:
             raise FileNotFoundError('Whole-slide image could not be loaded')
         else:
@@ -130,7 +129,7 @@ class Slide:
                 print(
                     self.__verbosePrefix + str(len(self.slideProperties)) + " properties were successfully imported")
 
-        if slideFilePath[-4:] == '.pml': # setTileProperties if starting from .pml file
+        if slideFilePath[-4:] == '.pml':  # setTileProperties if starting from .pml file
             self.regionWorker = pv.Region.new(self.slide)
             self.tileSize = self.tileDictionary[list(self.tileDictionary.keys())[0]]['height']
             xs = []
@@ -142,16 +141,16 @@ class Slide:
             self.numTilesInY = len(list(set(ys)))
 
             xs.sort()
-            tileSize_minus_tileOverlap = xs[1]-xs[0]
+            tileSize_minus_tileOverlap = xs[1] - xs[0]
             self.tileOverlap = self.tileSize - tileSize_minus_tileOverlap
 
     def square_int(self, i):
-        return self.getTile((0,0),writeToNumpy=True)
+        return self.getTile((0, 0), writeToNumpy=True)
 
     def run(self, num):
         results = []
-        results = Parallel(n_jobs= -1, backend="threading")\
-            (delayed(unwrap_self)(i) for i in tqdm(zip([self]*len(num), num), total = len(num)))
+        results = Parallel(n_jobs=-1, backend="threading") \
+            (delayed(unwrap_self)(i) for i in tqdm(zip([self] * len(num), num), total=len(num)))
         print(results)
 
     def setTileProperties(self, tileSize, tileOverlap=0, unit='px'):
@@ -286,7 +285,9 @@ class Slide:
         if not overwriteExistingForegroundDetection and 'foregroundLevel' in self.tileDictionary[list(self.tileDictionary.keys())[0]]:
             raise Warning('Foreground already detected. Use overwriteExistingForegroundDetection to write over old detections.')
         # get low-level magnification
-        self.lowMagSlide = pv.Image.new_from_file(self.slideFilePath, level=level)
+        if os.path.splitext(self.slideFilePath)[1] == ".isyntax":
+            self.lowMagSlide = open_isyntax(self.slideFilePath, level=level)
+        else: self.lowMagSlide = pv.Image.new_from_file(self.slideFilePath, level=level)
         self.lowMagSlide = np.ndarray(buffer=self.lowMagSlide.write_to_memory(),
                                       dtype=self.__format_to_dtype[self.lowMagSlide.format],
                                       shape=[self.lowMagSlide.height, self.lowMagSlide.width, self.lowMagSlide.bands])
@@ -496,8 +497,9 @@ class Slide:
         self.tileDictionary[tileAddress][key] = val
 
     def thumbnail(self, level):
-        self.lowMagSlide = pv.Image.new_from_file(
-            self.slideFilePath, level=level)
+        if os.path.splitext(self.slideFilePath)[1] == ".isyntax":
+            self.lowMagSlide = open_isyntax(self.slideFilePath, level=level)
+        else: self.lowMagSlide = pv.Image.new_from_file(self.slideFilePath, level=level)
         self.lowMagSlide = np.ndarray(buffer=self.lowMagSlide.write_to_memory(),
                                       dtype=self.__format_to_dtype[self.lowMagSlide.format],
                                       shape=[self.lowMagSlide.height, self.lowMagSlide.width, self.lowMagSlide.bands])
