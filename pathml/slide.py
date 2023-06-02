@@ -272,8 +272,17 @@ class Slide:
 
         Args:
             level (int, optional): the level of the WSI pyramid to detect foreground on. Default is 4. Not all WSIs will have a 4th level, so alter if necessary. If memory runs out, increase the level to detect foreground with a less high resolution image.
-            overwriteExistingForegroundDetection (Bool, optional): whether to old foreground detection if it is present in the tile dictionary already. Default is False.
-            threshold (str or int): Legacy argument, avoid using. Default is to put the results of all tissue detection methods (Otsu, triangle, simple thresholding) in the tile dictionary. Can be set to 'otsu', 'triangle' or an int to do simple darkness thresholding at that int value (tiles with a 0-100 foregroundLevel value less or equal to than the set value are considered foreground, where 0 is a pure black tile, 100 is a pure white tile)
+            overwriteExistingForegroundDetection (Bool, optional): 
+            whether to old foreground detection if it is present in the tile 
+            dictionary already. Default is False.
+            threshold (str or int): 
+            Legacy argument, avoid using. Default is to put the results of 
+            all tissue detection methods (Otsu, triangle, simple thresholding) 
+            in the tile dictionary. Can be set to 'otsu', 'triangle' or an int 
+            to do simple darkness thresholding at that int value 
+            (tiles with a 0-100 foregroundLevel value less or equal to than 
+            the set value are considered foreground, where 0 is a pure black 
+            tile, 100 is a pure white tile)
 
         Example:
             pathml_slide.detectForeground()

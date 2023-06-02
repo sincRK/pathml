@@ -53,7 +53,7 @@ def findWSI(
 	return data
 
 
-def writeTiles(path_to_slide, level=3, tilesize=224, writeMILdict=True, args=None):
+def writeTiles(path_to_slide, level=3, tilesize=224, tile_thresh=0.95, args=None):
 	s = Slide(path_to_slide, level=level).setTileProperties(tileSize=tilesize)
 	s.detectTissue(
 		numWorkers=0, 
@@ -69,13 +69,16 @@ def writeTiles(path_to_slide, level=3, tilesize=224, writeMILdict=True, args=Non
 	}
 	for address in s.iterateTiles():
 		slide_dict_entry = s.tileDictionary[address]
-		if slide_dict_entry["tissueLevel"] >= 0.95:
-			s.saveTile(
-				address, 
-				os.path.splitext(os.path.basename(path_to_slide))[0] + str(address[0]) + "_" + str(address[1]) + ".jpg[Q=95]",
-				folder=setupOutputFolder(path_to_slide, args)
+		if slide_dict_entry["tissueLevel"] >= tile_thresh:
+			if isinstance(args, argparse.Namespace) and args.save:
+				s.saveTile(
+					address, 
+					os.path.splitext(os.path.basename(path_to_slide))[0] + str(address[0]) + "_" + str(address[1]) + args,
+					folder=setupOutputFolder(path_to_slide, args)
+				)
+			mil_dict_update["grid"].append(
+				(slide_dict_entry["x"] * 2**level, slide_dict_entry["y"] * 2**level)
 			)
-			mil_dict_update["grid"].append((slide_dict_entry["x"] * 2**level, slide_dict_entry["y"] * 2**level))
 
 	return mil_dict_update
 
@@ -94,6 +97,9 @@ if __name__ == "__main__":
 	parser.add_argument("--wsi_iden", type=str, default="0123456789_", help="Chars in path name which are expected to belong to diagnose")
 	parser.add_argument("--tile_size", type=int, default=224, help="Size of tile to extract")
 	parser.add_argument("--tile_level", type=int, default=3, help="Level at which the tile should be extracted")
+	parser.add_argument("--tile_thresh", type=float, default=0.95, help="Threshold for tissue detection")
+	parser.add_argument("--store_format", type=str, default="jpg[Q=95]", help="Format in which the tiles are stored")
+	parser.add_argument("--save", type=bool, default=False, help="Whether to save the tiles")
 
 	args = parser.parse_args()
 
@@ -117,11 +123,19 @@ if __name__ == "__main__":
 	
 	for sample_slide in mil_dict["slides"]:
 		print(sample_slide)
-		mil_dict_update = writeTiles(sample_slide, args=args)
+		mil_dict_update = writeTiles(
+			path_to_slide=sample_slide,
+			level=args.tile_level,
+			tilesize=args.tile_size,
+			tile_thresh=args.tile_thresh,
+			args=args
+		)
+  
 
 		# print(mil_dict_update)
 		for k in mil_dict.keys():
-			mil_dict[k].append(mil_dict_update[k])
+			if k != "slides" and k != "targets":
+				mil_dict[k].append(mil_dict_update[k])
 	print(mil_dict)
 	with open(os.path.join(args.path_output, "mil_dict.pkl"), "wb") as file:
 		pickle.dump(mil_dict, file)

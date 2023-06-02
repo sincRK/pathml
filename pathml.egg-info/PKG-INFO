@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: pathml
-Version: 0.1.dev33+g20c5d7f.d20230601
+Version: 0.1.dev34+gf235660.d20230602
 Summary: PathML: a Python library for deep learning on whole-slide images
 Home-page: https://github.com/markowetzlab/pathml
 Author: Adam G. Berman, William R. Orchard, Marcel Gehrung, Florian Markowetz
@@ -10,6 +10,7 @@ Project-URL: Bug Tracker, https://github.com/markowetzlab/pathml/issues
 Project-URL: Documentation, https://github.com/markowetzlab/pathml-tutorial
 Project-URL: Source Code, https://github.com/markowetzlab/pathml
 Keywords: pathology
+Platform: UNKNOWN
 Classifier: Development Status :: 2 - Pre-Alpha
 Classifier: Intended Audience :: Developers
 Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
@@ -65,3 +66,5 @@ The complete documentation for `PathML` including its API reference can be found
 Disclaimer
 ----
 Note that this is prerelease software. Please use accordingly.
+
+
