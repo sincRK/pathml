@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
 from torchvision import transforms, models
+from pathlib import Path
 
 
-
-def tissueDetector(modelStateDictPath='../pathml/pathml/models/deep-tissue-detector_densenet_state-dict.pt', architecture='densenet'):
+def tissueDetector(modelStateDictPath=Path(__file__).resolve().parent / "deep-tissue-detector_densenet_state-dict.pt", architecture='densenet'):
 
     if architecture == 'inceptionv3':
         patch_size = 299

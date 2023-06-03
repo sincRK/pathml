@@ -1656,7 +1656,7 @@ class Slide:
         else:
             return True
 
-    def detectTissue(self, tissueDetectionLevel=1, tissueDetectionTileSize=512, tissueDetectionTileOverlap=0, tissueDetectionUpsampleFactor=4, batchSize=20, numWorkers=16, overwriteExistingTissueDetection=False, modelStateDictPath='../pathml/pathml/models/deep-tissue-detector_densenet_state-dict.pt', architecture='densenet'):
+    def detectTissue(self, tissueDetectionLevel=1, tissueDetectionTileSize=512, tissueDetectionTileOverlap=0, tissueDetectionUpsampleFactor=4, batchSize=20, numWorkers=16, overwriteExistingTissueDetection=False, modelStateDictPath=None, architecture='densenet'):
         """A function to apply PathML's built-in deep tissue detector to assign
         artifact, background, and tissue probabilities that sum to one to each tile
         in the tile dictionary. The raw tissue detection map for a WSI is saved into
@@ -1691,6 +1691,8 @@ class Slide:
             print("Inferring tissue detection model using CPU")
 
         print("Detecting tissue of "+self.slideFilePath)
+        if modelStateDictPath is None:
+            modelStateDictPath = Path(__file__).resolve().parent / 'models' / 'deep-tissue-detector_densenet_state-dict.pt'
         tissueForegroundSlide = Slide(self.slideFilePath, level=tissueDetectionLevel).setTileProperties(tileSize=tissueDetectionTileSize, tileOverlap=tissueDetectionTileOverlap) # tile size and overlap for tissue detector, not final tiles
         tmpProcessor = Processor(tissueForegroundSlide)
         tissueForegroundTmp = tmpProcessor.applyModel(tissueDetector(modelStateDictPath=modelStateDictPath, architecture=architecture), batch_size=batchSize, predictionKey='tissue_detector', numWorkers=numWorkers).adoptKeyFromTileDictionary(upsampleFactor=tissueDetectionUpsampleFactor)

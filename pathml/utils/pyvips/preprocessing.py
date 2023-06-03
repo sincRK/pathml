@@ -73,7 +73,8 @@ def writeTiles(path_to_slide, level=3, tilesize=224, tile_thresh=0.95, args=None
 			if isinstance(args, argparse.Namespace) and args.save:
 				s.saveTile(
 					address, 
-					os.path.splitext(os.path.basename(path_to_slide))[0] + str(address[0]) + "_" + str(address[1]) + args,
+					os.path.splitext(
+						os.path.basename(path_to_slide))[0] + str(address[0]) + "_" + str(address[1]) + args.store_format,
 					folder=setupOutputFolder(path_to_slide, args)
 				)
 			mil_dict_update["grid"].append(

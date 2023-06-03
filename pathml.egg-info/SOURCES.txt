@@ -64,6 +64,7 @@ setup.py
 .eggs/tomli-2.0.1-py3.8.egg/tomli/_re.py
 .eggs/tomli-2.0.1-py3.8.egg/tomli/_types.py
 .eggs/tomli-2.0.1-py3.8.egg/tomli/py.typed
+configs/cfgtest.yaml
 dist/pathml-0.1.dev33+g20c5d7f.d20220908-py3.8.egg
 docs/Makefile
 docs/make.bat
@@ -170,11 +171,8 @@ pathml/utils/pyvips/preprocessing.py
 pathml/utils/pyvips/.ipynb_checkpoints/Untitled-checkpoint.ipynb
 pathml/utils/torch/WholeSlideImageDataset.py
 pathml/utils/torch/dice_loss.py
-tests/Fetch-bm.py
 tests/__init__.py
-tests/no-testClass.py
-tests/testModel.py
+tests/test_Model.py
 tests/test_annotation.py
-tests/test_overlap.py
 tests/test_slide_tiling.py
 tests/test_visualisation.py

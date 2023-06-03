@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: pathml
-Version: 0.1.dev34+gf235660.d20230602
+Version: 0.1.dev35+g2046988.d20230602
 Summary: PathML: a Python library for deep learning on whole-slide images
 Home-page: https://github.com/markowetzlab/pathml
 Author: Adam G. Berman, William R. Orchard, Marcel Gehrung, Florian Markowetz
